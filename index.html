@@ -43,6 +43,59 @@
                     </p>
                 </section>
 
+                <section>
+                  <section>
+                    <h2>Multiplatform development</h2>
+                  </section>
+
+                  <section>
+                    <h3>At one extreme...</h3>
+                    <p>... one code per platform/device</p>
+                    <p class="fragment"><strong>Expensive</strong></p>
+                    <p class="fragment"><strong>Hard to mantain</strong></p>
+                  </section>
+
+                  <section>
+                    <h3>At the other extreme...</h3>
+                    <p>... same code for all platforms/devices</p>
+                    <p class="fragment"><strong>Needs a framework</strong></p>
+                    <p class="fragment"><strong>Not every aspect of the code can be easily adapted</strong></p>
+                  </section>
+
+                  <section>
+                    <h3>The intermediate path</h3>
+                    <p>We need to split platform-dependent from platform-independent code and rewrite <strong>only the former</strong></p>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <h2>Game development</h2>
+                  </section>
+
+                  <section>
+                    <h3>Architeture</h3>
+                    <pre>
+                      <code>
+Sprite.prototype.update = function (delta) {
+  // update position, animation, ...
+}
+
+Sprite.prototype.draw = function () {
+  // draw on the screen
+}
+
+function mainLoop () {
+  for (var i in sprites) {
+    sprites[i].update();
+    sprites[i].draw();
+  }
+}
+                      </code>
+                    </pre>
+                    <p class="fragment"><strong>Sprite's update deals with UI (platform-dependent) and behavior (platform-independent)
+                  </section>
+                </section>
             </div>
 
             <div class="logo"></div>
