@@ -28,6 +28,11 @@
         <!--[if lt IE 9]>
         <script src="reveal.js/lib/js/html5shiv.js"></script>
         <![endif]-->
+
+        <script src="js/object.js"></script>
+        <script src="js/sprite.js"></script>
+        <script src="js/scene.js"></script>
+        <script src="js/rectsprite.js"></script>
     </head>
 
     <body>
@@ -79,11 +84,11 @@
                       <code>
 Sprite.prototype.update = function (delta) {
   // update position, animation, ...
-}
+};
 
-Sprite.prototype.draw = function () {
-  // draw on the screen
-}
+Sprite.prototype.draw = function (context) {
+<  // draw on the screen
+};
 
 function mainLoop () {
   for (var i in sprites) {
@@ -93,7 +98,126 @@ function mainLoop () {
 }
                       </code>
                     </pre>
-                    <p class="fragment"><strong>Sprite's update deals with UI (platform-dependent) and behavior (platform-independent)
+                    <p class="fragment"><strong>Sprite's update deals with UI (platform-dependent) and behavior (platform-independent)</strong></p>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <h2>What kinds of problems do we face with this kind of architecture?</h2>
+                  </section>
+
+                  <section>
+                    <h2>1. Physics parameters change when resolution changes</h2>
+                    <pre>
+                      <code>
+RectSprite.prototype.update = function (delta) {
+    this.x += this.velocity * delta;
+};
+
+RectSprite.prototype.draw = function (context) {
+    context.fillStyle = "black";
+    context.fillRect(this.x, this.y, this.width, this.height);
+};
+                      </code>
+                    </pre>
+                  </section>
+
+                  <section>
+                    <p>
+                      <canvas id="canvas1a" width=400 height=400 style="background-color: white; border: 1px solid black; vertical-align:middle"></canvas>
+                      <canvas id="canvas1b" width=200 height=200 style="background-color: white; border: 1px solid black; vertical-align:middle"></canvas>
+                    </p>
+                    <p>
+                      Velocity (pixel/sec): <input type="number" id="velocity" value="10"></input> <button onclick="start1();">Play</button>
+                    </p>
+
+                    <script>
+                      //<!--
+                      var canvas1a = document.getElementById("canvas1a");
+                      var context1a = canvas1a.getContext("2d");
+
+                      var canvas1b = document.getElementById("canvas1b");
+                      var context1b = canvas1b.getContext("2d");
+
+                      var scene1a = new Scene();
+                      var rect1a = new RectSprite(20, 20);
+                      scene1a.addSprite(rect1a);
+                      var scene1b = new Scene();
+                      var rect1b = new RectSprite(20, 20);
+                      scene1b.addSprite(rect1b);
+
+                      var frametime = 30/1000; // 30 fps
+
+                      var running = false;
+
+                      function loop1() {
+                        if (!running)
+                          return;
+
+                        canvas1a.width = canvas1a.width;
+                        scene1a.update(frametime);
+                        scene1a.draw(context1a);
+
+                        canvas1b.width = canvas1b.width;
+                        scene1b.update(frametime);
+                        scene1b.draw(context1b);
+
+                        if (rect1a.x > canvas1a.width && rect1b.x > canvas1b.width)
+                          running = false;
+
+                        setTimeout(loop1, frametime);
+                      }
+
+                      function start1() {
+                        if (running)
+                          return;
+
+                        running = true;
+
+                        var velocity = document.getElementById("velocity").value;
+                        rect1a.x = 0;
+                        rect1a.y = 190;
+                        rect1a.velocity = velocity;
+
+                        rect1b.x = 0;
+                        rect1b.y = 90;
+                        rect1b.velocity = velocity;
+
+                        loop1();
+                      }
+                      //-->
+                    </script>
+                  </section>
+
+                  <section>
+                    <h2>The velocity needs to be scaled</h2>
+                    <ol>
+                      <li>Before setting the sprite parameter:</li>
+                      <pre>
+                        <code>
+var rect = new RectSprite();
+rect.velocity = config.velocity / UI.SCALE;
+                        </code>
+                      </pre>
+                      <li>Inside the sprite's update:</li>
+                      <pre>
+                        <code>
+RectSprite.prototype.update = function (delta) {
+    this.x += (this.velocity / UI.SCALE) * delta;
+};
+                        </code>
+                      </pre>
+                    </ol>
+                  </section>
+
+                  <section>
+                    <h2>2. Scaling can introduce rounding errors</h2>
+                  </section>
+
+                  <section>
+                    <h2>3. Testing can become harder</h2>
+                    <p>As the sprite is an object of the graphic system, you might need to instantiate all the graphic system to test, even if you're only interested in the physics</p>
                   </section>
                 </section>
             </div>
