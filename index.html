@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>FISL 14 - Multiplaform Architecture for Games</title>
+
+        <meta name="description" content="A multiplatform architecture for building games">
+        <meta name="author" content="Thiago Figueredo Cardoso, Thiago de Barros Lacerda">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="reveal.js/css/reveal.min.css">
+        <link rel="stylesheet" href="reveal.js/css/theme/openbossa.css" id="theme">
+
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
+
+        <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+        <script>
+            document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="reveal.js/lib/js/html5shiv.js"></script>
+        <![endif]-->
+
+        <script src="js/object.js"></script>
+        <script src="js/sprite.js"></script>
+        <script src="js/scene.js"></script>
+        <script src="js/rectsprite.js"></script>
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <div class="slides" data-background-transition="none">
+                <section>
+                    <h1>A Multiplatform Architecture for Games</h1>
+                    <h3>FISL 14</h3>
+                    <p>
+                      <small>Thiago Figueredo Cardoso,  Thiago de Barros Lacerda</small>
+                    </p>
+                </section>
+
+                <section>
+                  <section>
+                    <h2>Multiplatform development</h2>
+                  </section>
+
+                  <section>
+                    <h3>At one extreme...</h3>
+                    <p>... one code per platform/device</p>
+                    <p class="fragment"><strong>Expensive</strong></p>
+                    <p class="fragment"><strong>Hard to mantain</strong></p>
+                  </section>
+
+                  <section>
+                    <h3>At the other extreme...</h3>
+                    <p>... same code for all platforms/devices</p>
+                    <p class="fragment"><strong>Needs a framework</strong></p>
+                    <p class="fragment"><strong>Not every aspect of the code can be easily adapted</strong></p>
+                  </section>
+
+                  <section>
+                    <h3>The intermediate path</h3>
+                    <p>We need to split platform-dependent from platform-independent code and rewrite <strong>only the former</strong></p>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <h2>Game development</h2>
+                  </section>
+
+                  <section>
+                    <h3>Architeture</h3>
+                    <pre>
+                      <code>
+Sprite.prototype.update = function (delta) {
+  // update position, animation, ...
+};
+
+Sprite.prototype.draw = function (context) {
+<  // draw on the screen
+};
+
+function mainLoop () {
+  for (var i in sprites) {
+    sprites[i].update();
+    sprites[i].draw();
+  }
+}
+                      </code>
+                    </pre>
+                    <p class="fragment"><strong>Sprite's update deals with UI (platform-dependent) and behavior (platform-independent)</strong></p>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <h2>What kinds of problems do we face with this kind of architecture?</h2>
+                  </section>
+
+                  <section>
+                    <h2>1. Physics parameters change when resolution changes</h2>
+                    <pre>
+                      <code>
+RectSprite.prototype.update = function (delta) {
+    this.x += this.velocity * delta;
+};
+
+RectSprite.prototype.draw = function (context) {
+    context.fillStyle = "black";
+    context.fillRect(this.x, this.y, this.width, this.height);
+};
+                      </code>
+                    </pre>
+                  </section>
+
+                  <section>
+                    <p>
+                      <canvas id="canvas1a" width=400 height=400 style="background-color: white; border: 1px solid black; vertical-align:middle"></canvas>
+                      <canvas id="canvas1b" width=200 height=200 style="background-color: white; border: 1px solid black; vertical-align:middle"></canvas>
+                    </p>
+                    <p>
+                      Velocity (pixel/sec): <input type="number" id="velocity" value="10"></input> <button onclick="start1();">Play</button>
+                    </p>
+
+                    <script>
+                      //<!--
+                      var canvas1a = document.getElementById("canvas1a");
+                      var context1a = canvas1a.getContext("2d");
+
+                      var canvas1b = document.getElementById("canvas1b");
+                      var context1b = canvas1b.getContext("2d");
+
+                      var scene1a = new Scene();
+                      var rect1a = new RectSprite(20, 20);
+                      scene1a.addSprite(rect1a);
+                      var scene1b = new Scene();
+                      var rect1b = new RectSprite(20, 20);
+                      scene1b.addSprite(rect1b);
+
+                      var frametime = 30/1000; // 30 fps
+
+                      var running = false;
+
+                      function loop1() {
+                        if (!running)
+                          return;
+
+                        canvas1a.width = canvas1a.width;
+                        scene1a.update(frametime);
+                        scene1a.draw(context1a);
+
+                        canvas1b.width = canvas1b.width;
+                        scene1b.update(frametime);
+                        scene1b.draw(context1b);
+
+                        if (rect1a.x > canvas1a.width && rect1b.x > canvas1b.width)
+                          running = false;
+
+                        setTimeout(loop1, frametime);
+                      }
+
+                      function start1() {
+                        if (running)
+                          return;
+
+                        running = true;
+
+                        var velocity = document.getElementById("velocity").value;
+                        rect1a.x = 0;
+                        rect1a.y = 190;
+                        rect1a.velocity = velocity;
+
+                        rect1b.x = 0;
+                        rect1b.y = 90;
+                        rect1b.velocity = velocity;
+
+                        loop1();
+                      }
+                      //-->
+                    </script>
+                  </section>
+
+                  <section>
+                    <h2>The velocity needs to be scaled</h2>
+                    <ol>
+                      <li>Before setting the sprite parameter:</li>
+                      <pre>
+                        <code>
+var rect = new RectSprite();
+rect.velocity = config.velocity / UI.SCALE;
+                        </code>
+                      </pre>
+                      <li>Inside the sprite's update:</li>
+                      <pre>
+                        <code>
+RectSprite.prototype.update = function (delta) {
+    this.x += (this.velocity / UI.SCALE) * delta;
+};
+                        </code>
+                      </pre>
+                    </ol>
+                  </section>
+
+                  <section>
+                    <h2>2. Scaling can introduce rounding errors</h2>
+                  </section>
+
+                  <section>
+                    <h2>3. Testing can become harder</h2>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <img src="assets/circus.jpg" style="border: none; background-color: transparent">
+                  </section>
+
+                  <section>
+                    <h2>Circus v1</h2>
+                    <img src="assets/ovi.png" style="height: 200px; border: none; background-color: transparent">
+                    <img src="assets/qt.png" style="height: 200px; border: none; background-color: transparent">
+                    <p class="fragment">It wasn't modeled for multiple platforms</p>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v1</h2>
+                    <pre>
+                      <code>
+class Sprite : public QGraphicsObject
+{
+    Q_OBJECT
+    ...
+};
+                      </code>
+                    </pre>
+                    <p>Elements are implemented as objects of the graphic system</p>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v1</h2>
+                    <img src="assets/attack.png">
+                    <p>Behavior and UI mixed</p>
+                  </section>
+
+                  <section>
+                    <h3>Problems with Circus v1</h3>
+                    <pre>
+                      <code>
+void GameWorld::step(qreal dt)
+{
+    ...
+    const QPointF &ds = dt * sprite->velocity() * worldScaleFactor;
+    ...
+}
+                      </code>
+                    </pre>
+                    <p>Multiple resolutions handled with scales in the physics</p>
+                  </section>
+
+                  <section>
+                    <h2>Circus v1 on Windows Phone</h2>
+                    <img src="assets/wp.png" style="height: 200px; border: none; background-color: transparent">
+                    <p>No Qt, no C++, no reuse :(</p>
+                    <p>On top on the <a href="https://projects.developer.nokia.com/sparta">Sparta engine</a></p>
+                  </section>
+
+                  <section>
+                    <h2>Circus v2</h2>
+                    <img src="assets/ovi.png" style="height: 200px; border: none; background-color: transparent">
+                    <img src="assets/wp.png" style="height: 200px; border: none; background-color: transparent">
+                    <img src="assets/qt.png" style="height: 200px; border: none; background-color: transparent">
+                    <p>New elements</p>
+                    <p>Bug fixes</p>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v2</h2>
+                    <p>Implementation of classes/functionalities of the Qt framework in C#:</p>
+                    <ul>
+                      <li class="fragment">QtPropertyAnimation</li>
+                      <li class="fragment">Rotation</li>
+                      <li class="fragment">Object tree</li>
+                      <li class="fragment">Collision</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v2</h2>
+                    <p>No testing framework</p>
+                    <p>Step-by-step debugging in many cases</p>
+                  </section>
+
+                  <section>
+                    <h2>Circus v3?</h2>
+                    <p class="fragment">Oh, please, let's start from scratch!</p>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <h2>A multiplatform architecture for Circus</h2>
+                    <p>Three layer architecture, separation of concerns</p>
+                  </section>
+
+                  <section>
+                    <img src="assets/layers.png" style="border: none; background-color: transparent">
+                  </section>
+
+                  <section>
+                    <img src="assets/layers.png" style="border: none; background-color: transparent">
+
+                    <p><strong>Platform</strong> deals with platform-dependent issues (UI, audio and filesystem)</p>
+                  </section>
+
+                  <section>
+                    <img src="assets/layers.png" style="border: none; background-color: transparent">
+
+                    <p><strong>Tests</strong> uses the <strong>Core</strong> directly</p>
+                  </section>
+
+                  <section>
+                    <img src="assets/layers.png" style="border: none; background-color: transparent">
+
+                    <p><strong>Core</strong> deals with the behavior of the elements and game logic (score, world)</p>
+                  </section>
+
+                  <section>
+                    <img src="assets/layers.png" style="border: none; background-color: transparent">
+
+                    <p><strong>Physics</strong> deals with collisions and its resolution</p>
+                  </section>
+
+                  <section>
+                    <h2>How a game element is represented?</h2>
+                  </section>
+
+                  <section>
+                    <h2>Physics</h2>
+                    <img src="assets/physics.png">
+                    <p>Elements are <strong>bodies</strong>, interactions are <strong>collisions</strong></p>
+                  </section>
+
+                  <section>
+                    <h2>Core</h2>
+                    <p>Elements are <strong>entities</strong> that have a <strong>group of bodies</strong></p>
+                    <p>Interactions are <strong>input events</strong> and <strong>collisions between entities</strong></p>
+                  </section>
+
+                  <section>
+                    <h2>UI</h2>
+                    <p>Elements are <strong>sprites</strong> that display an <strong>entity</strong></p>
+                    <p>No interactions, only forwarding of events (the UI doesn't alter the game)</p>
+                    <img src="assets/ui.png">
+                  </section>
+
+                  <section>
+                    <h2>How do we use it in multiple platforms?</h2>
+                    <p>Rewrite only the <strong>Platform</strong> layer</p>
+                  </section>
+                </section>
+
+                <section>
+                  <h2>Summary</h2>
+                  <ul>
+                    <li class="fragment">Behavior consistency guaranteed by having only one code for behavior</li>
+                    <li class="fragment">No framework dependency, making it easy to translate to other languages (C++?)</li>
+                    <li class="fragment">Tests are easier to write (no frameworks) and need to be written once (one code)</li>
+                    <li class="fragment">Porting effort is clear</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h2>Let's try it!</h2>
+                </section>
+
+                <section>
+                  <h2>INdT @ FISL</h2>
+                  <p>Workshop de Jogos HTML5 - Sala 714 - 14h</p>
+                </section>
+
+                <section>
+                    <h1>A Multiplatform Architecture for Games</h1>
+                    <h3>FISL 14</h3>
+                    <p>
+                      <small>Thiago Figueredo Cardoso,  Thiago de Barros Lacerda</small>
+                    </p>
+                </section>
+            </div>
+
+            <div class="logo"></div>
+
+        </div>
+
+        <script src="reveal.js/lib/js/head.min.js"></script>
+        <script src="reveal.js/js/reveal.min.js"></script>
+
+        <script>
+
+            // Full list of configuration options available here:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+                transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+                // Optional libraries used to extend on reveal.js
+                dependencies: [
+                    { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'reveal.js/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+                    // { src: 'reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+
+        </script>
+
+    </body>
+</html>
