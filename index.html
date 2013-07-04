@@ -217,7 +217,92 @@ RectSprite.prototype.update = function (delta) {
 
                   <section>
                     <h2>3. Testing can become harder</h2>
-                    <p>As the sprite is an object of the graphic system, you might need to instantiate all the graphic system to test, even if you're only interested in the physics</p>
+                  </section>
+                </section>
+
+                <section>
+                  <section>
+                    <img src="assets/circus.jpg" style="border: none; background-color: transparent">
+                  </section>
+
+                  <section>
+                    <h2>Circus v1</h2>
+                    <img src="assets/ovi.png" style="height: 200px; border: none; background-color: transparent">
+                    <img src="assets/qt.png" style="height: 200px; border: none; background-color: transparent">
+                    <p class="fragment">It wasn't modeled for multiple platforms</p>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v1</h2>
+                    <pre>
+                      <code>
+class Sprite : public QGraphicsObject
+{
+    Q_OBJECT
+    ...
+};
+                      </code>
+                    </pre>
+                    <p>Elements are implemented as objects of the graphic system</p>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v1</h2>
+                    <img src="assets/attack.png">
+                    <p>Behavior and UI mixed</p>
+                  </section>
+
+                  <section>
+                    <h3>Problems with Circus v1</h3>
+                    <pre>
+                      <code>
+void GameWorld::step(qreal dt)
+{
+    ...
+    const QPointF &ds = dt * sprite->velocity() * worldScaleFactor;
+    ...
+}
+                      </code>
+                    </pre>
+                    <p>Multiple resolutions handled with scales in the physics</p>
+                  </section>
+
+                  <section>
+                    <h2>Circus v1 on Windows Phone</h2>
+                    <img src="assets/wp.png" style="height: 200px; border: none; background-color: transparent">
+                    <p>No Qt, no C++, no reuse :(</p>
+                    <p>On top on the <a href="https://projects.developer.nokia.com/sparta">Sparta engine</a></p>
+                  </section>
+
+                  <section>
+                    <h2>Circus v2</h2>
+                    <img src="assets/ovi.png" style="height: 200px; border: none; background-color: transparent">
+                    <img src="assets/wp.png" style="height: 200px; border: none; background-color: transparent">
+                    <img src="assets/qt.png" style="height: 200px; border: none; background-color: transparent">
+                    <p>New elements</p>
+                    <p>Bug fixes</p>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v2</h2>
+                    <p>Implementation of classes/functionalities of the Qt framework in C#:</p>
+                    <ul>
+                      <li class="fragment">QtPropertyAnimation</li>
+                      <li class="fragment">Rotation</li>
+                      <li class="fragment">Object tree</li>
+                      <li class="fragment">Collision</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h2>Problems with Circus v2</h2>
+                    <p>No testing framework</p>
+                    <p>Step-by-step debugging in many cases</p>
+                  </section>
+
+                  <section>
+                    <h2>Circus v3?</h2>
+                    <p class="fragment">Oh, please, let's start from scratch!</p>
                   </section>
                 </section>
             </div>
